@@ -1,0 +1,20 @@
+{
+  "name": "helpsathi-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "deploy": "firebase deploy --only functions"
+  },
+  "dependencies": {
+    "expo-server-sdk": "^4.0.0",
+    "firebase-admin": "^13.4.0",
+    "firebase-functions": "^6.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
