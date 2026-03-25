@@ -42,6 +42,7 @@ type AuthContextValue = {
   ) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: (uid: string) => Promise<void>;
+  enterDemo: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -137,6 +138,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
       async refreshProfile(uid) {
         const nextProfile = await getProfile(uid);
         setProfile(nextProfile);
+      },
+      async enterDemo() {
+        const nextState = await demoRegister(
+          `guest-${Date.now()}@helpsathi.demo`,
+          "guest-demo",
+          "Guest User"
+        );
+        setUser(nextState.user);
+        setProfile(nextState.profile);
       },
     }),
     [loading, profile, user]

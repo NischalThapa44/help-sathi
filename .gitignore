@@ -2,10 +2,13 @@
 
 # dependencies
 node_modules/
+Client/node_modules/
 
 # Expo
 .expo/
 dist/
+Client/.expo/
+Client/dist/
 web-build/
 expo-env.d.ts
 
@@ -32,6 +35,8 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+Client/.env
 
 # typescript
 *.tsbuildinfo
@@ -41,3 +46,9 @@ app-example
 # generated native folders
 /ios
 /android
+
+# model artifacts
+model/venv/
+model/**/__pycache__/
+model/.git/
+model/.DS_Store

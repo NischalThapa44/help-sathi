@@ -17,6 +17,23 @@ import {
 
 import { useAuth } from "@/context/auth-context";
 
+function getFriendlyAuthError(error: unknown) {
+  const code =
+    typeof error === "object" && error && "code" in error
+      ? String(error.code)
+      : "";
+
+  if (code === "auth/configuration-not-found") {
+    return "Firebase Email/Password sign-in is not enabled yet. Open Firebase Console > Authentication > Sign-in method > enable Email/Password, then try again.";
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unable to continue";
+}
+
 export default function HomeScreen() {
   const [displayName, setDisplayName] = useState("");
   const [login, setLogin] = useState("");
@@ -29,7 +46,7 @@ export default function HomeScreen() {
   const accent = useThemeColor({}, "accent");
   const background = useThemeColor({}, "background");
   const text = useThemeColor({}, "text");
-  const { loading, register, signIn, user } = useAuth();
+  const { enterDemo, loading, register, signIn, user } = useAuth();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width >= 980;
@@ -71,10 +88,25 @@ export default function HomeScreen() {
 
       router.replace("/(tabs)");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to continue";
+      const message = getFriendlyAuthError(error);
       setStatusMessage(message);
       Alert.alert("Authentication error", message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEnterDemo = async () => {
+    setIsLoading(true);
+    setStatusMessage("");
+
+    try {
+      await enterDemo();
+      router.replace("/(tabs)");
+    } catch (error) {
+      const message = getFriendlyAuthError(error);
+      setStatusMessage(message);
+      Alert.alert("Unable to open demo", message);
     } finally {
       setIsLoading(false);
     }
@@ -245,6 +277,16 @@ export default function HomeScreen() {
                   </Text>
                 </>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.demoButton, { borderColor: secondary }]}
+              onPress={handleEnterDemo}
+              disabled={isLoading}
+            >
+              <Text style={[styles.demoButtonText, { color: secondary }]}>
+                Continue in demo mode
+              </Text>
             </TouchableOpacity>
 
             {statusMessage ? (
@@ -444,6 +486,17 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  demoButton: {
+    minHeight: 54,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  demoButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
   },
   registerContainer: {
     flexDirection: "row",

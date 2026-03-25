@@ -23,6 +23,7 @@ import {
 } from "@/services/help-sathi-backend";
 
 export default function DashboardScreen() {
+  const background = useThemeColor({}, "background");
   const light = useThemeColor({}, "light");
   const primary = useThemeColor({}, "primary");
   const text = useThemeColor({}, "text");
@@ -131,7 +132,7 @@ export default function DashboardScreen() {
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor }]}
+      style={[styles.container, { backgroundColor: background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
