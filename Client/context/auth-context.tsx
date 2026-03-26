@@ -53,13 +53,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+
     if (!firebaseConfigured) {
-      void demoRestoreSession().then(({ user: demoUser, profile: demoProfile }) => {
-        setUser(demoUser);
-        setProfile(demoProfile);
-        setLoading(false);
-      });
-      return;
+      void demoRestoreSession()
+        .then(({ user: demoUser, profile: demoProfile }) => {
+          setUser(demoUser);
+          setProfile(demoProfile);
+        })
+        .catch(() => {
+          setUser(null);
+          setProfile(null);
+        })
+        .finally(() => {
+          clearTimeout(loadingTimeout);
+          setLoading(false);
+        });
+
+      return () => {
+        clearTimeout(loadingTimeout);
+      };
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
@@ -67,27 +82,37 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       if (!nextUser) {
         setProfile(null);
+        clearTimeout(loadingTimeout);
         setLoading(false);
         return;
       }
 
-      await createOrUpdateProfile(nextUser, {
-        email: nextUser.email ?? "",
-      });
-
       try {
+        await createOrUpdateProfile(nextUser, {
+          email: nextUser.email ?? "",
+        });
+
         const expoPushToken = await registerForPushNotificationsAsync();
         await saveExpoPushToken(nextUser.uid, expoPushToken);
       } catch {
         // The app should still work even if push registration is unavailable.
       }
 
-      const nextProfile = await getProfile(nextUser.uid);
-      setProfile(nextProfile);
-      setLoading(false);
+      try {
+        const nextProfile = await getProfile(nextUser.uid);
+        setProfile(nextProfile);
+      } catch {
+        setProfile(null);
+      } finally {
+        clearTimeout(loadingTimeout);
+        setLoading(false);
+      }
     });
 
-    return unsubscribe;
+    return () => {
+      clearTimeout(loadingTimeout);
+      unsubscribe();
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(

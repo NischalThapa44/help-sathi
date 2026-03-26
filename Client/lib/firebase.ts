@@ -21,7 +21,23 @@ const fallbackConfig = {
   appId: "1:000000000000:web:demo",
 };
 
-export const firebaseConfigured = Object.values(firebaseConfig).every(Boolean);
+function isRealFirebaseValue(value: string) {
+  const normalized = value.trim().toLowerCase();
+
+  if (!normalized) {
+    return false;
+  }
+
+  return !(
+    normalized.includes("your_project") ||
+    normalized.includes("your_eas_project") ||
+    normalized.includes("example")
+  );
+}
+
+export const firebaseConfigured = Object.values(firebaseConfig).every(
+  (value) => isRealFirebaseValue(value)
+);
 
 const app = getApps().length
   ? getApp()
